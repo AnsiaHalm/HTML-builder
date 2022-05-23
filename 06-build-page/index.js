@@ -8,6 +8,7 @@ const fromStyles = path.join(__dirname, 'styles');
 const toStyles = path.join(__dirname, 'project-dist', 'style.css');
 const fromAssets = path.join(__dirname, 'assets');
 const toAssets = path.join(wayTo,  'assets');
+let check = false;
 
 
 fs.mkdir(wayTo,{ recursive: true },(error) => {
@@ -35,26 +36,26 @@ fs.readdir(fromStyles, {encoding: 'utf-8'}, (error, arr) => {
     }
   }});
 
-
-
 //assets
 function deleteAssets (toAssets) {
-  fs.readdir(toAssets,{encoding:'utf-8', withFileTypes: true}, (error, array) => {
-    if (error) console.error(error);
-    else {
-      array.forEach(file => {
-        if (file.isFile()) {
-          fs.unlink(path.join(toAssets,file.name),(error) => {
-            if (error) console.log(error);
-          });
-        }
-        else {
-          deleteAssets(path.join(toAssets,file.name));
-        }
-      });
-      htmlBuilder();
-    }
-  });
+  if (check) {
+    fs.readdir(toAssets,{encoding:'utf-8', withFileTypes: true}, (error, array) => {
+      if (error) console.error(error);
+      else {
+        array.forEach(file => {
+          if (file.isFile()) {
+            fs.unlink(path.join(toAssets,file.name),(error) => {
+              if (error) console.log(error);
+            });
+          }
+          else {
+            deleteAssets(path.join(toAssets,file.name));
+          }
+        });
+      }
+    });
+  }
+  htmlBuilder();
 }
 deleteAssets(toAssets);
 
@@ -76,6 +77,7 @@ function assets (fromAssets, toAssets){
       });
     }
   }); 
+  check = true;
 }
 assets(fromAssets, toAssets);  
 

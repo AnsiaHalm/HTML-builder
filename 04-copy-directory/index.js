@@ -8,57 +8,35 @@ fs.mkdir(wayTo,{ recursive: true },(error) => {
   if (error) console.error(error);
 });
 
-fs.readdir(wayTo, (error, arr) => {
-  for ( let i = 0; i < arr.length; i++ ) {
-    fs.unlink(wayTo + '/' + arr[i], error =>{
-      if (error) console.error(error);
-    });
-  }
-});
+function copyDirectory() { 
+  fs.readdir(way, (error, arr)=> {
+    if (error) console.error(error);
+    else {
+      for ( let file of arr ){
+        fs.copyFile(way + '/' + file, wayTo + '/' + file, error =>{
+          if (error) console.error(error);
+        });
+      }
+    }
+  });
+}
 
-fs.readdir(way, (error, arr)=> {
-  for ( let file of arr ){
-    fs.copyFile(way + '/' + file, wayTo + '/' + file, error =>{
-      if (error) console.error(error);
-    });
-  }
-});
+function deleteFolder() {
+  fs.readdir(wayTo, (error, arr) => {
+    if (error) console.error(error);
+    else {
+      for ( let i = 0; i < arr.length; i++ ) {
+        fs.unlink(wayTo + '/' + arr[i], error =>{
+          if (error) console.error(error);
+        });
+      }
+    }
+  });
+}
 
-// function readFolder() {
-//   fs.readdir(way,{
-//     encoding: 'utf-8',
-//     withFileTypes: true
-//   }, (error,arr) => {
-//     if (error) console.error(error);
-//     else {
-//       arr.forEach(file => {
-//         if(file.isDirectory()) readFolder();
-//         else {
-//           let pathFromFile = path.join(way,`${file.name}`);
-//           let pathToFile = path.join(wayTo,`${file.name}`);
-//           fs.unlink(pa)
-//           fs.copyFile(pathFromFile,pathToFile,(error) => {
-//             if(error) console.error(error);
-//           });
-//         }
-//       }
-//       );
-//     }
-//   });
-//   fs.readdir(wayTo,{
-//     encoding: 'utf-8',
-//     withFileTypes: true
-//   }, (error,arr) => {
-//     if (error) console.error(error);
-//     else {
-//       arr.forEach(file => {
-//         if(file.isDirectory()) readFolder();
-//         else{
-          
-//         }
-//       }
-//       );
-//     }
-//   });
-// }
-// readFolder();
+async function run() {
+  // eslint-disable-next-line no-unused-vars
+  const promise = await deleteFolder();
+  return copyDirectory();
+}
+run();

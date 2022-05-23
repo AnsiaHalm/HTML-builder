@@ -12,7 +12,7 @@ const stream = fs.WriteStream(way);
 function writeFile() {
   interface.question('Введите текст: ', (answer) => {
     if (answer === 'exit') {
-      console.log('exit');
+      console.log('Goodbye');
       interface.close();
     }
     else {
@@ -24,9 +24,10 @@ function writeFile() {
       });
     }
   });
-  interface.on('SIGINT',()=>{
-    console.log('exit');
-    interface.close();
-  });
 }
 writeFile();
+
+interface.on('SIGINT',()=>{
+  console.log('\nGoodbye');
+  interface.close();
+});
