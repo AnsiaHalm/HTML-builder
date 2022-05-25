@@ -8,8 +8,13 @@ const fromStyles = path.join(__dirname, 'styles');
 const toStyles = path.join(__dirname, 'project-dist', 'style.css');
 const fromAssets = path.join(__dirname, 'assets');
 const toAssets = path.join(wayTo,  'assets');
-let check = false;
 
+fs.stat(toAssets, (error) => {
+  if (error) assets(fromAssets, toAssets).then(htmlBuilder());
+  else {
+    deleteAssets(toAssets).then(assets(fromAssets, toAssets).then(htmlBuilder()));
+  }
+});
 
 fs.mkdir(wayTo,{ recursive: true },(error) => {
   if (error) console.error(error);
@@ -37,29 +42,25 @@ fs.readdir(fromStyles, {encoding: 'utf-8'}, (error, arr) => {
   }});
 
 //assets
-function deleteAssets (toAssets) {
-  if (check) {
-    fs.readdir(toAssets,{encoding:'utf-8', withFileTypes: true}, (error, array) => {
-      if (error) console.error(error);
-      else {
-        array.forEach(file => {
-          if (file.isFile()) {
-            fs.unlink(path.join(toAssets,file.name),(error) => {
-              if (error) console.log(error);
-            });
-          }
-          else {
-            deleteAssets(path.join(toAssets,file.name));
-          }
-        });
-      }
-    });
-  }
-  htmlBuilder();
+async function deleteAssets (toAssets) {
+  fs.readdir(toAssets,{encoding:'utf-8', withFileTypes: true}, (error, array) => {
+    if (error) console.error(error);
+    else {
+      array.forEach(file => {
+        if (file.isFile()) {
+          fs.unlink(path.join(toAssets,file.name),(error) => {
+            if (error) console.log(error);
+          });
+        }
+        else {
+          deleteAssets(path.join(toAssets,file.name));
+        }
+      });
+    }
+  });
 }
-deleteAssets(toAssets);
 
-function assets (fromAssets, toAssets){
+async function assets (fromAssets, toAssets){
   fs.mkdir(toAssets, {recursive: true}, (error) => {
     if(error) console.error(error);
   });
@@ -77,13 +78,12 @@ function assets (fromAssets, toAssets){
       });
     }
   }); 
-  check = true;
 }
-assets(fromAssets, toAssets);  
+
 
 //html
 let string = '';
-function htmlBuilder() { 
+async function htmlBuilder() { 
   const templateStream = fs.createReadStream(wayFrom,'utf-8');
   templateStream.on('data', (data) => {
     string = data.toString();
@@ -93,7 +93,7 @@ function htmlBuilder() {
         array.forEach(file => {
           const fileStream = fs.createReadStream(wayToComponents + '/' + file.name);
           fileStream.on('data', (fileData) => {
-            const regexp = new RegExp(`{{${file.name.split('.').slice(0,1).join('')}}`,'gi');
+            const regexp = new RegExp(`{{${file.name.split('.').slice(0,1).join('')}}}`,'gi');
             string = string.replace(regexp, fileData.toString());
             fs.writeFile(wayToHTML,string,(error) => {
               if(error) console.log(error);
